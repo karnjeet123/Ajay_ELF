@@ -1,0 +1,25 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenBrew.Api", "OpenBrew.Api\OpenBrew.Api.csproj", "{3C23FB77-29DF-4AAA-B270-8F5ED2AC884D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenBrew.Api.Tests", "OpenBrew.Api.Tests\OpenBrew.Api.Tests.csproj", "{645E892D-BED6-4452-881E-2B8988149CDB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3C23FB77-29DF-4AAA-B270-8F5ED2AC884D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C23FB77-29DF-4AAA-B270-8F5ED2AC884D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C23FB77-29DF-4AAA-B270-8F5ED2AC884D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C23FB77-29DF-4AAA-B270-8F5ED2AC884D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{645E892D-BED6-4452-881E-2B8988149CDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{645E892D-BED6-4452-881E-2B8988149CDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{645E892D-BED6-4452-881E-2B8988149CDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{645E892D-BED6-4452-881E-2B8988149CDB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
