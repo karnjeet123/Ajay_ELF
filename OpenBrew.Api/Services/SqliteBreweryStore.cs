@@ -6,14 +6,18 @@ namespace OpenBrew.Api.Services;
 
 public sealed class SqliteBreweryStore(
     OpenBreweryDbContext dbContext,
-    IBreweryMemoryCache memoryCache) : IBreweryCacheStore
+    IBreweryMemoryCache memoryCache,
+    ILogger<SqliteBreweryStore> logger) : IBreweryCacheStore
 {
     public async Task<IReadOnlyList<Brewery>> GetOpenBreweriesAsync(CancellationToken cancellationToken)
     {
         if (memoryCache.TryGet(out var cachedBreweries))
         {
+            logger.LogDebug("Serving {Count} breweries from memory cache", cachedBreweries.Count);
             return cachedBreweries;
         }
+
+        logger.LogInformation("Memory cache miss; loading breweries from SQLite");
 
         var breweries = await dbContext.Breweries
             .AsNoTracking()
@@ -28,6 +32,7 @@ public sealed class SqliteBreweryStore(
             .ToListAsync(cancellationToken);
 
             memoryCache.Set(breweries);
+            logger.LogInformation("Loaded {Count} breweries from SQLite into memory cache", breweries.Count);
             return breweries;
     }
 }

@@ -473,3 +473,13 @@ C:\Users\AJ20271662\PycharmProjects\OpenBrew\OpenBrew.Api.Tests\bin\Debug\net8.0
 C:\Users\AJ20271662\PycharmProjects\OpenBrew\OpenBrew.Api.Tests\bin\Debug\net8.0\runtimes\win-x64\native\e_sqlite3.dll
 C:\Users\AJ20271662\PycharmProjects\OpenBrew\OpenBrew.Api.Tests\bin\Debug\net8.0\runtimes\win-x86\native\e_sqlite3.dll
 C:\Users\AJ20271662\PycharmProjects\OpenBrew\OpenBrew.Api.Tests\bin\Debug\net8.0\Data\Seed\breweries.json
+C:\Users\AJ20271662\PycharmProjects\OpenBrew\OpenBrew.Api.Tests\obj\Debug\net8.0\OpenBrew.Api.Tests.sourcelink.json
+C:\Users\AJ20271662\PycharmProjects\OpenBrew\OpenBrew.Api.Tests\bin\Debug\net8.0\appsettings.Testing.json
+C:\Users\AJ20271662\PycharmProjects\OpenBrew\OpenBrew.Api.Tests\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\AJ20271662\PycharmProjects\OpenBrew\OpenBrew.Api.Tests\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\AJ20271662\PycharmProjects\OpenBrew\OpenBrew.Api.Tests\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\AJ20271662\PycharmProjects\OpenBrew\OpenBrew.Api.Tests\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\AJ20271662\PycharmProjects\OpenBrew\OpenBrew.Api.Tests\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\AJ20271662\PycharmProjects\OpenBrew\OpenBrew.Api.Tests\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\AJ20271662\PycharmProjects\OpenBrew\OpenBrew.Api.Tests\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\AJ20271662\PycharmProjects\OpenBrew\OpenBrew.Api.Tests\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll

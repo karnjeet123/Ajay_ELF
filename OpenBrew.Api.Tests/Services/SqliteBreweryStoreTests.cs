@@ -38,7 +38,7 @@ public sealed class SqliteBreweryStoreTests
         dbContext.ChangeTracker.Clear();
         var memoryCache = new Mock<IBreweryMemoryCache>();
         memoryCache.Setup(x => x.TryGet(out It.Ref<IReadOnlyList<Brewery>>.IsAny)).Returns(false);
-        var store = new SqliteBreweryStore(dbContext, memoryCache.Object);
+        var store = new SqliteBreweryStore(dbContext, memoryCache.Object, NullLogger<SqliteBreweryStore>.Instance);
 
         var result = await store.GetOpenBreweriesAsync(CancellationToken.None);
 
@@ -62,7 +62,7 @@ public sealed class SqliteBreweryStoreTests
         ];
         var memoryCache = new Mock<IBreweryMemoryCache>();
         memoryCache.Setup(x => x.TryGet(out cached)).Returns(true);
-        var store = new SqliteBreweryStore(dbContext, memoryCache.Object);
+        var store = new SqliteBreweryStore(dbContext, memoryCache.Object, NullLogger<SqliteBreweryStore>.Instance);
 
         var result = await store.GetOpenBreweriesAsync(CancellationToken.None);
 

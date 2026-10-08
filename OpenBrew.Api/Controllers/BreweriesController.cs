@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OpenBrew.Api.Contracts;
 using OpenBrew.Api.Services;
@@ -8,13 +9,16 @@ namespace OpenBrew.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/breweries")]
+[Authorize]
 public sealed class BreweriesController : ControllerBase
 {
     private readonly IBreweryService _breweryService;
+    private readonly ILogger<BreweriesController> _logger;
 
-    public BreweriesController(IBreweryService breweryService)
+    public BreweriesController(IBreweryService breweryService, ILogger<BreweriesController> logger)
     {
         _breweryService = breweryService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -25,7 +29,13 @@ public sealed class BreweriesController : ControllerBase
         [FromQuery] BreweryQueryRequest request,
         CancellationToken cancellationToken)
     {
+        _logger.LogInformation(
+            "Handling GetBreweries request: Page={Page}, PageSize={PageSize}, SortBy={SortBy}",
+            request.Page, request.PageSize, request.SortBy);
+
         var breweries = await _breweryService.GetBreweriesAsync(request, cancellationToken);
+
+        _logger.LogInformation("Returning {Count} breweries", breweries.Count);
         return Ok(breweries);
     }
 
@@ -37,7 +47,11 @@ public sealed class BreweriesController : ControllerBase
         [FromQuery] AutocompleteQueryRequest request,
         CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Handling Autocomplete request: Term={Term}", request.Term);
+
         var suggestions = await _breweryService.AutocompleteAsync(request, cancellationToken);
+
+        _logger.LogInformation("Returning {Count} autocomplete suggestions", suggestions.Count);
         return Ok(suggestions);
     }
 }

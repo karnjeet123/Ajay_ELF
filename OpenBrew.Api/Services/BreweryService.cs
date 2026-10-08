@@ -6,10 +6,12 @@ namespace OpenBrew.Api.Services;
 public sealed class BreweryService : IBreweryService
 {
     private readonly IBreweryCacheStore _breweryCacheStore;
+    private readonly ILogger<BreweryService> _logger;
 
-    public BreweryService(IBreweryCacheStore breweryCacheStore)
+    public BreweryService(IBreweryCacheStore breweryCacheStore, ILogger<BreweryService> logger)
     {
         _breweryCacheStore = breweryCacheStore;
+        _logger = logger;
     }
 
     public async Task<IReadOnlyList<BreweryResponse>> GetBreweriesAsync(BreweryQueryRequest request, CancellationToken cancellationToken)
@@ -39,6 +41,7 @@ public sealed class BreweryService : IBreweryService
 
         if (sortBy == SortBy.Distance && origin is null)
         {
+            _logger.LogWarning("Sort by distance requested without latitude/longitude");
             throw new ArgumentException("Latitude and longitude are required when sorting by distance.");
         }
 
@@ -60,6 +63,10 @@ public sealed class BreweryService : IBreweryService
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
             .ToList();
+
+        _logger.LogInformation(
+            "Filtered {FilteredCount} of {TotalCount} breweries, returning page {Page} with {ReturnedCount} results",
+            filtered.Count(), breweries.Count, request.Page, paged.Count);
 
         return paged.Select(x => new BreweryResponse(
                 x.Name,

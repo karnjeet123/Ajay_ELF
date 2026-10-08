@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +14,25 @@ namespace OpenBrew.Api.Tests.Integration;
 
 public sealed class BreweriesApiTests
 {
+    private const string TestUsername = "test-user";
+    private const string TestPassword = "Test-P@ssw0rd!";
+
+    [Fact]
+    public async Task GetBreweries_WithoutToken_ReturnsUnauthorized()
+    {
+        await using var factory = new BreweryApiFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/v1/breweries");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
     [Fact]
     public async Task GetBreweries_ReturnsMappedOpenBreweries()
     {
         await using var factory = new BreweryApiFactory();
-        using var client = factory.CreateClient();
+        using var client = await CreateAuthenticatedClientAsync(factory);
 
         var response = await client.GetAsync("/api/v1/breweries?sortBy=name&pageSize=10");
         var breweries = await response.Content.ReadFromJsonAsync<BreweryResponse[]>();
@@ -33,7 +48,7 @@ public sealed class BreweriesApiTests
     public async Task Autocomplete_ReturnsOrderedSuggestions()
     {
         await using var factory = new BreweryApiFactory();
-        using var client = factory.CreateClient();
+        using var client = await CreateAuthenticatedClientAsync(factory);
 
         var response = await client.GetAsync("/api/v1/breweries/autocomplete?term=brew&limit=5");
         var suggestions = await response.Content.ReadFromJsonAsync<string[]>();
@@ -47,7 +62,7 @@ public sealed class BreweriesApiTests
     public async Task GetBreweries_CombinesCityAndSearchFilters()
     {
         await using var factory = new BreweryApiFactory();
-        using var client = factory.CreateClient();
+        using var client = await CreateAuthenticatedClientAsync(factory);
 
         var response = await client.GetAsync("/api/v1/breweries?city=austin&search=ales");
         var breweries = await response.Content.ReadFromJsonAsync<BreweryResponse[]>();
@@ -62,7 +77,7 @@ public sealed class BreweriesApiTests
     public async Task GetBreweries_AppliesSortingAndPagination()
     {
         await using var factory = new BreweryApiFactory();
-        using var client = factory.CreateClient();
+        using var client = await CreateAuthenticatedClientAsync(factory);
 
         var response = await client.GetAsync(
             "/api/v1/breweries?sortBy=name&sortDirection=asc&page=2&pageSize=1");
@@ -77,7 +92,7 @@ public sealed class BreweriesApiTests
     public async Task GetBreweries_SortsByDistanceAndIncludesCalculatedDistance()
     {
         await using var factory = new BreweryApiFactory();
-        using var client = factory.CreateClient();
+        using var client = await CreateAuthenticatedClientAsync(factory);
 
         var response = await client.GetAsync(
             "/api/v1/breweries?sortBy=distance&latitude=30.2&longitude=-97.7&pageSize=10");
@@ -94,7 +109,7 @@ public sealed class BreweriesApiTests
     public async Task GetBreweries_DistanceSortWithoutCoordinatesReturnsBadRequest()
     {
         await using var factory = new BreweryApiFactory();
-        using var client = factory.CreateClient();
+        using var client = await CreateAuthenticatedClientAsync(factory);
 
         var response = await client.GetAsync("/api/v1/breweries?sortBy=distance");
         var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
@@ -107,7 +122,7 @@ public sealed class BreweriesApiTests
     public async Task GetBreweries_InvalidPageSizeReturnsValidationProblem()
     {
         await using var factory = new BreweryApiFactory();
-        using var client = factory.CreateClient();
+        using var client = await CreateAuthenticatedClientAsync(factory);
 
         var response = await client.GetAsync("/api/v1/breweries?pageSize=0");
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
@@ -121,7 +136,7 @@ public sealed class BreweriesApiTests
     public async Task GetBreweries_MalformedPageValueReturnsValidationProblem()
     {
         await using var factory = new BreweryApiFactory();
-        using var client = factory.CreateClient();
+        using var client = await CreateAuthenticatedClientAsync(factory);
 
         var response = await client.GetAsync("/api/v1/breweries?page=not-a-number");
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
@@ -137,7 +152,7 @@ public sealed class BreweriesApiTests
     public async Task Autocomplete_InvalidQueryReturnsValidationProblem(string path, string property)
     {
         await using var factory = new BreweryApiFactory();
-        using var client = factory.CreateClient();
+        using var client = await CreateAuthenticatedClientAsync(factory);
 
         var response = await client.GetAsync(path);
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
@@ -151,7 +166,7 @@ public sealed class BreweriesApiTests
     public async Task GetBreweries_InvalidSortReturnsBadRequestProblemDetails()
     {
         await using var factory = new BreweryApiFactory();
-        using var client = factory.CreateClient();
+        using var client = await CreateAuthenticatedClientAsync(factory);
 
         var response = await client.GetAsync("/api/v1/breweries?sortBy=rating");
         var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
@@ -165,7 +180,7 @@ public sealed class BreweriesApiTests
     public async Task GetBreweries_UnexpectedStoreFailureReturnsSafeServerError()
     {
         await using var factory = new BreweryApiFactory(throwOnRequest: true);
-        using var client = factory.CreateClient();
+        using var client = await CreateAuthenticatedClientAsync(factory);
 
         var response = await client.GetAsync("/api/v1/breweries");
         var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
@@ -179,11 +194,22 @@ public sealed class BreweriesApiTests
     public async Task UnsupportedApiVersion_DoesNotMatchVersionedRoute()
     {
         await using var factory = new BreweryApiFactory();
-        using var client = factory.CreateClient();
+        using var client = await CreateAuthenticatedClientAsync(factory);
 
         var response = await client.GetAsync("/api/v2/breweries");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    private static async Task<HttpClient> CreateAuthenticatedClientAsync(BreweryApiFactory factory)
+    {
+        var client = factory.CreateClient();
+        var loginResponse = await client.PostAsJsonAsync(
+            "/api/v1/auth/login",
+            new LoginRequest { Username = TestUsername, Password = TestPassword });
+        var login = await loginResponse.Content.ReadFromJsonAsync<LoginResponse>();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", login!.AccessToken);
+        return client;
     }
 
     private sealed class BreweryApiFactory(bool throwOnRequest = false) : WebApplicationFactory<Program>

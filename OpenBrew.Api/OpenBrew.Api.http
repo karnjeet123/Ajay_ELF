@@ -1,29 +1,49 @@
 @OpenBrew.Api_HostAddress = http://localhost:5123
 
+### Log in to obtain a JWT access token (use the DemoUser credentials from appsettings)
+# @name login
+POST {{OpenBrew.Api_HostAddress}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "ChangeMe123!"
+}
+
+###
+
+@authToken = {{login.response.body.$.accessToken}}
+
 ### List open breweries sorted by name
 GET {{OpenBrew.Api_HostAddress}}/api/v1/breweries?sortBy=name&sortDirection=asc&page=1&pageSize=20
 Accept: application/json
+Authorization: Bearer {{authToken}}
 
 ###
 
 ### List open breweries filtered by city + search term
 GET {{OpenBrew.Api_HostAddress}}/api/v1/breweries?city=San%20Diego&search=beer&sortBy=city&sortDirection=asc&page=1&pageSize=20
 Accept: application/json
+Authorization: Bearer {{authToken}}
 
 ###
 
 ### List open breweries sorted by distance (requires latitude/longitude)
 GET {{OpenBrew.Api_HostAddress}}/api/v1/breweries?sortBy=distance&sortDirection=asc&latitude=32.7157&longitude=-117.1611&page=1&pageSize=20
 Accept: application/json
+Authorization: Bearer {{authToken}}
 
 ###
 
 ### Autocomplete brewery names
 GET {{OpenBrew.Api_HostAddress}}/api/v1/breweries/autocomplete?term=stone&limit=10
 Accept: application/json
+Authorization: Bearer {{authToken}}
 
 ###
 
 ### Validation example (invalid sortBy)
 GET {{OpenBrew.Api_HostAddress}}/api/v1/breweries?sortBy=rating
 Accept: application/json
+Authorization: Bearer {{authToken}}
+

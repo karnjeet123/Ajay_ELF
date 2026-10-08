@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using OpenBrew.Api.Contracts;
 using OpenBrew.Api.Models;
@@ -121,6 +122,6 @@ public sealed class BreweryServiceTests
         var cache = new Mock<IBreweryCacheStore>();
         cache.Setup(x => x.GetOpenBreweriesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(breweries);
-        return new BreweryService(cache.Object);
+        return new BreweryService(cache.Object, NullLogger<BreweryService>.Instance);
     }
 }
