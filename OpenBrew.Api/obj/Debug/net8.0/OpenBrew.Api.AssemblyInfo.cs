@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OpenBrew.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3b22a962261852271b5bd4b6c1da866a4dab9ed1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f76578392a0d39da757d5aaabaf2174519b8f431")]
 [assembly: System.Reflection.AssemblyProductAttribute("OpenBrew.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OpenBrew.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
