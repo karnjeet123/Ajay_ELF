@@ -1,1 +1,10 @@
-*.obj
+# Ignore build outputs
+bin/
+obj/
+
+# Ignore SQLite databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3

@@ -69,6 +69,18 @@ public sealed class BreweryServiceTests
     }
 
     [Fact]
+    public async Task GetBreweriesAsync_ExtremePageReturnsEmptyResult()
+    {
+        var service = CreateService(Breweries);
+
+        var result = await service.GetBreweriesAsync(
+            new BreweryQueryRequest { Page = int.MaxValue },
+            CancellationToken.None);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
     public async Task GetBreweriesAsync_SortsByDistanceAndReturnsRoundedDistance()
     {
         var service = CreateService(Breweries);
@@ -84,6 +96,28 @@ public sealed class BreweryServiceTests
 
         Assert.Equal("Alpha Brewing", result[0].Name);
         Assert.Equal(0, result[0].DistanceKm);
+        Assert.Null(result[^1].DistanceKm);
+    }
+
+    [Fact]
+    public async Task GetBreweriesAsync_SortsByDistanceDescendingWithMissingCoordinatesLast()
+    {
+        var service = CreateService(Breweries);
+
+        var result = await service.GetBreweriesAsync(
+            new BreweryQueryRequest
+            {
+                SortBy = "distance",
+                SortDirection = "desc",
+                Latitude = 45.5152,
+                Longitude = -122.6784
+            },
+            CancellationToken.None);
+
+        Assert.Equal("Beta Beer", result[0].Name);
+        Assert.Equal("Gamma Ales", result[1].Name);
+        Assert.Equal("Alpha Brewing", result[2].Name);
+        Assert.Equal("alpha brewing", result[3].Name);
         Assert.Null(result[^1].DistanceKm);
     }
 

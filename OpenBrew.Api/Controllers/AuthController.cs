@@ -1,6 +1,8 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
+using System.Text;
 using OpenBrew.Api.Contracts;
 using OpenBrew.Api.Options;
 using OpenBrew.Api.Services;
@@ -31,8 +33,8 @@ public sealed class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public ActionResult<LoginResponse> Login([FromBody] LoginRequest request)
     {
-        if (!string.Equals(request.Username, _demoUser.Username, StringComparison.Ordinal) ||
-            !string.Equals(request.Password, _demoUser.Password, StringComparison.Ordinal))
+        if (!FixedTimeEquals(request.Username, _demoUser.Username) ||
+            !FixedTimeEquals(request.Password, _demoUser.Password))
         {
             _logger.LogWarning("Failed login attempt for username {Username}", request.Username);
             return Unauthorized();
@@ -42,5 +44,12 @@ public sealed class AuthController : ControllerBase
 
         _logger.LogInformation("Issued JWT token for username {Username}", request.Username);
         return Ok(new LoginResponse(accessToken, expiresAtUtc));
+    }
+
+    private static bool FixedTimeEquals(string provided, string expected)
+    {
+        var providedHash = SHA256.HashData(Encoding.UTF8.GetBytes(provided));
+        var expectedHash = SHA256.HashData(Encoding.UTF8.GetBytes(expected));
+        return CryptographicOperations.FixedTimeEquals(providedHash, expectedHash);
     }
 }

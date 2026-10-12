@@ -54,15 +54,22 @@ public sealed class BreweryService : IBreweryService
                 ? filtered.OrderBy(x => x.City)
                 : filtered.OrderByDescending(x => x.City),
             SortBy.Distance => sortDirection == SortDirection.Asc
-                ? filtered.OrderBy(x => GetDistanceOrMax(x, origin!.Value))
-                : filtered.OrderByDescending(x => GetDistanceOrMax(x, origin!.Value)),
+                ? filtered
+                    .OrderBy(x => HasCoordinates(x) ? 0 : 1)
+                    .ThenBy(x => GetDistanceOrMax(x, origin!.Value))
+                : filtered
+                    .OrderBy(x => HasCoordinates(x) ? 0 : 1)
+                    .ThenByDescending(x => GetDistanceOrMax(x, origin!.Value)),
             _ => filtered.OrderBy(x => x.Name)
         };
 
-        var paged = ordered
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
-            .ToList();
+        var offset = (long)(request.Page - 1) * request.PageSize;
+        var paged = offset > int.MaxValue
+            ? []
+            : ordered
+                .Skip((int)offset)
+                .Take(request.PageSize)
+                .ToList();
 
         _logger.LogInformation(
             "Filtered {FilteredCount} of {TotalCount} breweries, returning page {Page} with {ReturnedCount} results",
@@ -119,6 +126,9 @@ public sealed class BreweryService : IBreweryService
             ? double.MaxValue
             : CalculateDistanceKm(origin.Latitude, origin.Longitude, brewery.Latitude.Value, brewery.Longitude.Value);
     }
+
+    private static bool HasCoordinates(Brewery brewery) =>
+        brewery.Latitude.HasValue && brewery.Longitude.HasValue;
 
     private static double CalculateDistanceKm(double lat1, double lon1, double lat2, double lon2)
     {

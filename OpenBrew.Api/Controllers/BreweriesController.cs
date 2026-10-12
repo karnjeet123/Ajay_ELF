@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using OpenBrew.Api.Contracts;
 using OpenBrew.Api.Services;
 
@@ -10,6 +11,7 @@ namespace OpenBrew.Api.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/breweries")]
 [Authorize]
+[EnableRateLimiting("BreweryApi")]
 public sealed class BreweriesController : ControllerBase
 {
     private readonly IBreweryService _breweryService;

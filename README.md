@@ -11,6 +11,8 @@ OpenBrew is an ASP.NET Core (.NET 8) Web API that serves a searchable, sortable,
 - **API versioning** — routes are versioned (`/api/v1/...`) using `Asp.Versioning`.
 - **Swagger / OpenAPI** — interactive docs available in Development, including a "Bearer" auth button for testing secured endpoints.
 - **Global exception handling** — unhandled exceptions are logged and converted to safe `ProblemDetails` responses.
+- **Explicit CORS policy** — cross-origin requests are denied by default and can be enabled for configured origins.
+- **Production transport security** — HSTS is enabled in the Production environment for 180 days, including subdomains.
 - **Structured logging** — `ILogger` is used throughout controllers, services, and middleware.
 
 ## Project Structure
@@ -98,6 +100,9 @@ Settings are bound from `appsettings.json` (and environment-specific overrides) 
 | `Jwt` | `SigningKey` | Symmetric key (HMAC-SHA256) used to sign/validate tokens; must be at least 32 characters. |
 | `Jwt` | `ExpiryMinutes` | Token lifetime in minutes. |
 | `DemoUser` | `Username` / `Password` | Credentials accepted by `/api/v1/auth/login`. |
+| `Cors` | `AllowedOrigins` | Array of exact origins allowed for cross-origin requests; empty by default (fail closed). |
+
+For example, configure `Cors:AllowedOrigins` with `https://app.example.com` for a deployed frontend. With environment variables, use `Cors__AllowedOrigins__0` for the first origin, `Cors__AllowedOrigins__1` for the second, and so on. Do not use `*` when credentials are required.
 
 ## API Reference
 

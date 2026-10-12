@@ -29,6 +29,37 @@ public sealed class BreweriesApiTests
     }
 
     [Fact]
+    public async Task GetBreweries_UnconfiguredOriginDoesNotReceiveCorsHeaders()
+    {
+        await using var factory = new BreweryApiFactory();
+        using var client = await CreateAuthenticatedClientAsync(factory);
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/breweries");
+        request.Headers.Add("Origin", "https://unconfigured.example");
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.False(response.Headers.Contains("Access-Control-Allow-Origin"));
+    }
+
+    [Fact]
+    public async Task GetBreweries_ExceedingRateLimitReturnsTooManyRequests()
+    {
+        await using var factory = new BreweryApiFactory();
+        using var client = await CreateAuthenticatedClientAsync(factory);
+
+        var responses = await Task.WhenAll(
+            Enumerable.Range(0, 31)
+                .Select(_ => client.GetAsync("/api/v1/breweries")));
+
+        var rejected = Assert.Single(responses, response =>
+            response.StatusCode == HttpStatusCode.TooManyRequests);
+
+        Assert.Equal(30, responses.Count(response => response.StatusCode == HttpStatusCode.OK));
+        Assert.True(rejected.Headers.Contains("Retry-After"));
+    }
+
+    [Fact]
     public async Task GetBreweries_ReturnsMappedOpenBreweries()
     {
         await using var factory = new BreweryApiFactory();
@@ -89,6 +120,19 @@ public sealed class BreweriesApiTests
     }
 
     [Fact]
+    public async Task GetBreweries_ExtremePageReturnsEmptyResult()
+    {
+        await using var factory = new BreweryApiFactory();
+        using var client = await CreateAuthenticatedClientAsync(factory);
+
+        var response = await client.GetAsync("/api/v1/breweries?page=2147483647");
+        var breweries = await response.Content.ReadFromJsonAsync<BreweryResponse[]>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Empty(breweries ?? []);
+    }
+
+    [Fact]
     public async Task GetBreweries_SortsByDistanceAndIncludesCalculatedDistance()
     {
         await using var factory = new BreweryApiFactory();
@@ -116,6 +160,31 @@ public sealed class BreweriesApiTests
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Contains("Latitude and longitude are required", problem?.Detail);
+    }
+
+    [Theory]
+    [InlineData("latitude=NaN", "Latitude")]
+    [InlineData("latitude=Infinity", "Latitude")]
+    [InlineData("latitude=-Infinity", "Latitude")]
+    [InlineData("longitude=NaN", "Longitude")]
+    [InlineData("longitude=Infinity", "Longitude")]
+    [InlineData("longitude=-Infinity", "Longitude")]
+    [InlineData("latitude=999", "Latitude")]
+    [InlineData("latitude=-91", "Latitude")]
+    [InlineData("longitude=999", "Longitude")]
+    [InlineData("longitude=-181", "Longitude")]
+    public async Task GetBreweries_NonFiniteCoordinatesReturnValidationProblem(string query, string property)
+    {
+        await using var factory = new BreweryApiFactory();
+        using var client = await CreateAuthenticatedClientAsync(factory);
+
+        var response = await client.GetAsync($"/api/v1/breweries?{query}&sortBy=distance");
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.NotNull(problem);
+        Assert.Contains(property, problem.Errors.Keys);
+        Assert.DoesNotContain("System.Text.Json", string.Join(" ", problem.Errors[property]));
     }
 
     [Fact]
